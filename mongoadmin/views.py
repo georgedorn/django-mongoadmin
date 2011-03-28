@@ -106,8 +106,6 @@ class MongoAdminSite(AdminSite):
         }
         context.update(extra_context or {})
         return super(MongoAdminSite, self).login(request, context)
-        return render_to_response('admin/login.html', context,
-            context_instance=RequestContext(request))
 
     def has_permission(self, user):
         return user.is_active and (user.is_staff or user.is_superuser)
