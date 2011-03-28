@@ -18,6 +18,7 @@ from django.views.decorators.csrf import csrf_protect
 from mongoadmin.forms import MongoAdminForm
 from mongoengine import Document
 from mongoengine.django.shortcuts import get_document_or_404, get_list_or_404
+from django.contrib.admin import AdminSite
 
 LOGIN_FORM_KEY = 'this_is_the_login_form'
 
@@ -71,9 +72,10 @@ class MongoAdmin(object):
                 document = self.model
         return ThisMongoAdminForm(self, *args, **kwargs)
 
-class MongoAdminSite(object):
-    def __init__(self):
+class MongoAdminSite(AdminSite):
+    def __init__(self, *args, **kwargs):
         self._registry = {}
+        super(MongoAdminSite, self).__init__(*args, **kwargs)
 
     def register(self, cls, admin=None):
         admin = admin or MongoAdmin
@@ -103,6 +105,7 @@ class MongoAdminSite(object):
             'root_path': 'WUT',
         }
         context.update(extra_context or {})
+        return super(MongoAdminSite, self).login(request, context)
         return render_to_response('admin/login.html', context,
             context_instance=RequestContext(request))
 
@@ -218,6 +221,7 @@ class MongoAdminSite(object):
     def change_view(self, request, collection, object_id=None):
         cls, admin = self.verify_collection(collection)
         if object_id:
+            print object_id
             document = get_document_or_404(cls, id=object_id)
             form = admin.get_form(request.POST or None, instance=document)
             add, change = False, True
